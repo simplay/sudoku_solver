@@ -1,3 +1,5 @@
+require 'set'
+
 class Element
 
   attr_accessor :value, :candidates
@@ -7,11 +9,24 @@ class Element
     @map = map
     @row_idx = row_idx
     @column_idx = column_idx
-    @candidates = []
+    @candidates = unknown? ? (1..9).to_a.map(&:to_s) : []
   end
 
   def unknown?
     @value.nil?
+  end
+
+  def one_candidate?
+    @candidates.count == 1
+  end
+
+  def set_final_value
+    @value = @candidates.first
+    @candidates = []
+  end
+
+  def update_candidates_from(impossible_candidates)
+    @candidates = (Set.new(@candidates) - Set.new(impossible_candidates)).to_a
   end
 
   def to_s

@@ -71,6 +71,10 @@ class Map
     nil
   end
 
+  def unknown_count
+    (select &:unknown?).count
+  end
+
   private
 
   def decremented_value_of(prev_value)
