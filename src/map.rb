@@ -82,11 +82,13 @@ class Map
 
   # Display values of Element instances in this Map.
   def display_print
-    @grid.each do |row|
-      row.each do |element|
-        print element.to_s + " "
+    @grid.each_with_index do |row, row_idx|
+      row.each_with_index do |element, column_idx|
+        separator = (column_idx % 3 == 2) ? "   " : " "
+        print element.to_s + separator
       end
       puts
+      puts if (row_idx % 3 == 2)
     end
     nil
   end
