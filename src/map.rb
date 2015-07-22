@@ -108,6 +108,12 @@ class Map
     (select &:unknown?).count
   end
 
+  # Does this Map still have any unknown Elements?
+  # @return [Boolean] true if there are zero unknown Elements otherwise false.
+  def solved?
+    unknown_count == 0
+  end
+
   private
 
   # Decrement a given value if not nil.

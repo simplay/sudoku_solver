@@ -34,10 +34,17 @@ class Solver
         at_least_one_element_modified = true if were_candidates_modified
       end
       unknowns = @solution.unknown_count
-      # if unknowns != prev_unknown_count || at_least_one_element_modified == false
-      # then check if map has 2 candidate solution, guess one and try to solve
-    end while(unknowns != prev_unknown_count || at_least_one_element_modified)
+      should_still_iterate = (unknowns != prev_unknown_count) || at_least_one_element_modified
+
+      not_solved_not_known_how2_proceed = !@solution.solved? && !should_still_iterate
+      perform_backtracking_step if not_solved_not_known_how2_proceed
+
+    end while(should_still_iterate)
     puts "processed #{iter_count} iterations exhibiting #{unknowns} unknown(s)"
+  end
+
+  def perform_backtracking_step
+    puts "backtracking should be performed"
   end
 
   # Update the candidate list of a given #element in @map
