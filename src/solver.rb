@@ -21,17 +21,20 @@ class Solver
   def solve_map
     unknowns = @solution.unknown_count
     iter_count = 0
+    binding.pry
     begin
       iter_count = iter_count + 1
       prev_unknown_count = unknowns
+      at_least_one_element_modified = false
       @solution.each do |element|
         if element.unknown?
-          solve_candidates_for(element)
+          were_candidates_modified = solve_candidates_for(element)
           element.set_final_value if element.one_candidate?
         end
+        at_least_one_element_modified = true if were_candidates_modified
       end
       unknowns = @solution.unknown_count
-    end while(unknowns != prev_unknown_count)
+    end while(unknowns != prev_unknown_count || at_least_one_element_modified)
     puts "processed #{iter_count} iterations exhibiting #{unknowns} unknown(s)"
   end
 
@@ -40,14 +43,17 @@ class Solver
   # All values that already exist (within range 1-9) cannot be assigned to the current element#value anymore.
   #
   # @param element [Element] current instance we want to update its candidates.
+  # @return [Boolean] did this element's candidate list got modified? True if yes otherwise false.
   def solve_candidates_for(element)
     known_row_values = (element.elements_in_same_row.map &:value).compact
-    element.update_candidates_from(known_row_values)
+    row_check_changed_candidates = element.update_candidates_from(known_row_values)
 
     known_column_values = (element.elements_in_same_column.map &:value).compact
-    element.update_candidates_from(known_column_values)
+    col_check_changed_candidates = element.update_candidates_from(known_column_values)
 
     known_block_values = (element.elements_in_same_block.map &:value).compact
-    element.update_candidates_from(known_block_values)
+    block_check_changed_candidates = element.update_candidates_from(known_block_values)
+
+    row_check_changed_candidates || col_check_changed_candidates || block_check_changed_candidates
   end
 end

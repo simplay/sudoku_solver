@@ -39,9 +39,13 @@ class Element
   end
 
   # Update candidate list by removing all impossible candidates.
+  #
   # @param impossible_candidates [Array] impossible candidate Element values.
+  # @return [Boolean] has the candidate list modified? true if yes, otherwise false.
   def update_candidates_from(impossible_candidates)
+    prev_cand_count = @candidates.count
     @candidates = (Set.new(@candidates) - Set.new(impossible_candidates)).to_a
+    @candidates.count != prev_cand_count
   end
 
   # Pretty String representation of value of this Element.
