@@ -21,7 +21,7 @@ class Solver
   def solve_map
     unknowns = @solution.unknown_count
     iter_count = 0
-    binding.pry
+    # binding.pry
     begin
       iter_count = iter_count + 1
       prev_unknown_count = unknowns
@@ -34,6 +34,8 @@ class Solver
         at_least_one_element_modified = true if were_candidates_modified
       end
       unknowns = @solution.unknown_count
+      # if unknowns != prev_unknown_count || at_least_one_element_modified == false
+      # then check if map has 2 candidate solution, guess one and try to solve
     end while(unknowns != prev_unknown_count || at_least_one_element_modified)
     puts "processed #{iter_count} iterations exhibiting #{unknowns} unknown(s)"
   end

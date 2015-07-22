@@ -32,6 +32,12 @@ class Element
     @candidates.count == 1
   end
 
+  # Does this Element have only two possible candidates?
+  # @return [Boolean] true if there are only two possible candidates.
+  def two_candidates?
+    @candidates.count == 2
+  end
+
   # Assign a value to this Element and empty its candidate list.
   def set_final_value
     @value = @candidates.first

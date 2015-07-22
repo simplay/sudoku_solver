@@ -41,6 +41,14 @@ class Map
     end
   end
 
+  # Retrieve all Elements in this map that have exactly two possible candidates.
+  #
+  # Is used for 1-lvl backtracking solver approaches (if there is no apriori solution).
+  # @return [Array] of Element instances of this Map that have two possible candidates.
+  def elements_with_two_candidates
+    select &:two_candidates?
+  end
+
   # Retrieve all Elements that belong to row #row_idx
   #
   # @param row_idx [Integer] row index of target Element in this map.
