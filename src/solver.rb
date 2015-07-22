@@ -10,7 +10,10 @@ class Solver
   # @param map [Mao] our target sudoku map (unsolved).
   def initialize(map)
     @solution = map
+    @mark_flag = true
+    @first_flag = true
     solve_map
+
   end
 
   private
@@ -39,15 +42,21 @@ class Solver
       unknowns = @solution.unknown_count
       should_still_iterate = (unknowns != prev_unknown_count) || at_least_one_element_modified
 
-      was_backtracking = perform_backtracking_step if backracking_required?(should_still_iterate)
+      @was_backtracking = perform_backtracking_step if backracking_required?(should_still_iterate)
 
 
       if !!@retry_req
-        # was_backtracking = true #hack
-        puts "should reset the prev state and try another value"
+        was_backtracking = true #hack
+        @first_el.set_tried_value
+        @solution.unmark_two_candidate_elements_as_backtrackable(@first_el)
+        @mark_flag = true
+        @first_flag = true
+        @retry_req = false
+        # puts "should reset the prev state and try another value"
       end
 
-    end while(should_still_iterate || was_backtracking)
+    puts "#{unknowns} unknown(s)"
+    end while(should_still_iterate || @was_backtracking)
     puts "processed #{iter_count} iterations exhibiting #{unknowns} unknown(s)"
   end
 
@@ -67,12 +76,21 @@ class Solver
   # configurations ahve been tried.
   def perform_backtracking_step
     return false unless APPLY_BACKTRACKING
-    a_two_candidates_element = @solution.elements_with_two_candidates.first
+    if @mark_flag == true
+      @solution.mark_two_candidate_elements_as_backtrackable
+      @mark_flag = false
+    end
+    a_two_candidates_element = @solution.backtrackable_elements.first
 
     @retry_req = a_two_candidates_element.nil?
     unless @retry_req
-      a_two_candidates_element.try_guessed_candidate
-      puts "backtracking should be performed"
+      @last_el = a_two_candidates_element
+      if @first_flag
+        @first_flag = false
+        @first_el = a_two_candidates_element
+      end
+      a_two_candidates_element.guess_final_value
+      # puts "backtracking should be performed"
       return true
     end
     false
@@ -86,13 +104,13 @@ class Solver
   # @return [Boolean] did this element's candidate list got modified? True if yes otherwise false.
   def solve_candidates_for(element)
     known_row_values = (element.elements_in_same_row.map &:value).compact
-    row_check_changed_candidates = element.update_candidates_from(known_row_values)
+    row_check_changed_candidates = element.update_candidates_from(known_row_values, @was_backtracking)
 
     known_column_values = (element.elements_in_same_column.map &:value).compact
-    col_check_changed_candidates = element.update_candidates_from(known_column_values)
+    col_check_changed_candidates = element.update_candidates_from(known_column_values, @was_backtracking)
 
     known_block_values = (element.elements_in_same_block.map &:value).compact
-    block_check_changed_candidates = element.update_candidates_from(known_block_values)
+    block_check_changed_candidates = element.update_candidates_from(known_block_values, @was_backtracking)
 
     row_check_changed_candidates || col_check_changed_candidates || block_check_changed_candidates
   end

@@ -51,12 +51,15 @@ class Map
 
   # Fetch all Elements in this map with two possible candidates and mark them as backtrackable.
   def mark_two_candidate_elements_as_backtrackable
+    @foo = elements_with_two_candidates
     elements_with_two_candidates.each &:mark_as_backtrackable
   end
 
   # Mark all Elements in this Map as not backtrackable.
-  def unmark_two_candidate_elements_as_backtrackable
-    each &:unmark_as_backtrackable
+  def unmark_two_candidate_elements_as_backtrackable(without_el)
+    @foo = backtrackable_elements + select do |el| el.dirty? end
+    @foo.delete(without_el)
+    @foo.each &:reset_before_backtracking
   end
 
   # Get all backtrackable Elements in this Map.

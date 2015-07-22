@@ -18,6 +18,8 @@ class Element
     @column_idx = column_idx
 
     @backtrackable = false
+    @once = true
+    @dirty = false
 
     @candidates = unknown? ? (1..9).to_a.map(&:to_s) : []
 
@@ -25,8 +27,13 @@ class Element
     @preserved_candidates = []
   end
 
+  def dirty?
+    !!@dirty
+  end
+
   def mark_as_backtrackable
     @backtracking_possibilities = @candidates
+    @backuped_candidates = @candidates
     @backtrackable = true
   end
 
@@ -68,39 +75,47 @@ class Element
   #
   # @param impossible_candidates [Array] impossible candidate Element values.
   # @return [Boolean] has the candidate list modified? true if yes, otherwise false.
-  def update_candidates_from(impossible_candidates)
+  def update_candidates_from(impossible_candidates, backtrack_mode = false)
     prev_cand_count = @candidates.count
-    @candidates = (Set.new(@candidates) - Set.new(impossible_candidates)).to_a
-    @candidates.count != prev_cand_count
-  end
 
-  # REMOVE ME
-  # Set a value for this Element's value.
-  # Remember all previous values.
-  # @param value [Integer] guesses value for this Element.
-  def try_guessed_candidate
-    value = @candidates.first
-    @tried_backtracking_values << value
-    @preserved_candidates = @candidates
-    @candidates = []
-    @value = value
+    if backtrack_mode
+      @dirty = true
+      if @once
+        @backuped_candidates = @candidates
+        @once = false
+      end
+    end
+
+    @candidates = (Set.new(@candidates) - Set.new(impossible_candidates)).to_a
+
+
+
+    @candidates.count != prev_cand_count
   end
 
   def reset_before_backtracking
     @candidates = @backuped_candidates
     @value = nil
+    @once = true
+    @dirty = false
     unmark_as_backtrackable
   end
 
   def guess_final_value
     if backtrackable?
-      value = (Set.new(@backtracking_possibilities) - Set.new(@tried_backtracking_values)).to_a.first
-
-      @backtracking_possibilities.delete(value)
-      @tried_backtracking_values << value
+      @tried_value = (Set.new(@backtracking_possibilities) - Set.new(@tried_backtracking_values)).to_a.first
+      @backtrackable = false
       @candidates = []
-      @value = value
+      @value = @tried_value
     end
+  end
+
+  def set_tried_value
+    @tried_backtracking_values << @tried_value
+    val = (Set.new(@backuped_candidates) - Set.new(@tried_backtracking_values)).to_a.first
+    @backtrackable = false
+    @candidates = []
+    @value = val
   end
 
   # Pretty String representation of value of this Element.
