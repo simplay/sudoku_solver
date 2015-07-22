@@ -3,7 +3,7 @@
 class Solver
   attr_accessor :solution
 
-  APPLY_BACKTRACKING = false
+  APPLY_BACKTRACKING = true
 
   # Solves a given sudoku represented as a Map instance.
   #
@@ -39,11 +39,24 @@ class Solver
       unknowns = @solution.unknown_count
       should_still_iterate = (unknowns != prev_unknown_count) || at_least_one_element_modified
 
-      not_solved_not_known_how2_proceed = !@solution.solved? && !should_still_iterate
-      was_backtracking = perform_backtracking_step if not_solved_not_known_how2_proceed
+      was_backtracking = perform_backtracking_step if backracking_required?(should_still_iterate)
+
+
+      if !!@retry_req
+        # was_backtracking = true #hack
+        puts "should reset the prev state and try another value"
+      end
 
     end while(should_still_iterate || was_backtracking)
     puts "processed #{iter_count} iterations exhibiting #{unknowns} unknown(s)"
+  end
+
+  # Backtracking is required if not every map element has been solved AND
+  # the solver does report to stop iterating.
+  #
+  # @return [Boolean] true if sudoku has not been solved but the solver does not want to iterate anymore.
+  def backracking_required?(should_still_iterate)
+    !@solution.solved? && !should_still_iterate
   end
 
   # CURRENTLY NOT WORKING CORRECLY
@@ -55,7 +68,9 @@ class Solver
   def perform_backtracking_step
     return false unless APPLY_BACKTRACKING
     a_two_candidates_element = @solution.elements_with_two_candidates.first
-    unless a_two_candidates_element.nil?
+
+    @retry_req = a_two_candidates_element.nil?
+    unless @retry_req
       a_two_candidates_element.try_guessed_candidate
       puts "backtracking should be performed"
       return true

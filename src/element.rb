@@ -16,9 +16,27 @@ class Element
     @map = map
     @row_idx = row_idx
     @column_idx = column_idx
+
+    @backtrackable = false
+
     @candidates = unknown? ? (1..9).to_a.map(&:to_s) : []
+
     @tried_backtracking_values = []
     @preserved_candidates = []
+  end
+
+  def mark_as_backtrackable
+    @backtracking_possibilities = @candidates
+    @backtrackable = true
+  end
+
+  def unmark_as_backtrackable
+    @backtracking_possibilities = nil
+    @backtrackable = false
+  end
+
+  def backtrackable?
+    !!@backtrackable
   end
 
   # Does this Element have a known #value, i.e. its value is not nil.
@@ -56,6 +74,7 @@ class Element
     @candidates.count != prev_cand_count
   end
 
+  # REMOVE ME
   # Set a value for this Element's value.
   # Remember all previous values.
   # @param value [Integer] guesses value for this Element.
@@ -65,6 +84,23 @@ class Element
     @preserved_candidates = @candidates
     @candidates = []
     @value = value
+  end
+
+  def reset_before_backtracking
+    @candidates = @backuped_candidates
+    @value = nil
+    unmark_as_backtrackable
+  end
+
+  def guess_final_value
+    if backtrackable?
+      value = (Set.new(@backtracking_possibilities) - Set.new(@tried_backtracking_values)).to_a.first
+
+      @backtracking_possibilities.delete(value)
+      @tried_backtracking_values << value
+      @candidates = []
+      @value = value
+    end
   end
 
   # Pretty String representation of value of this Element.

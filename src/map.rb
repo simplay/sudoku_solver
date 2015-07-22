@@ -49,6 +49,23 @@ class Map
     select &:two_candidates?
   end
 
+  # Fetch all Elements in this map with two possible candidates and mark them as backtrackable.
+  def mark_two_candidate_elements_as_backtrackable
+    elements_with_two_candidates.each &:mark_as_backtrackable
+  end
+
+  # Mark all Elements in this Map as not backtrackable.
+  def unmark_two_candidate_elements_as_backtrackable
+    each &:unmark_as_backtrackable
+  end
+
+  # Get all backtrackable Elements in this Map.
+  #
+  # @return [Array] list of backtrackable Element instances.
+  def backtrackable_elements
+    select &:backtrackable?
+  end
+
   # Retrieve all Elements that belong to row #row_idx
   #
   # @param row_idx [Integer] row index of target Element in this map.
