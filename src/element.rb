@@ -17,6 +17,8 @@ class Element
     @row_idx = row_idx
     @column_idx = column_idx
     @candidates = unknown? ? (1..9).to_a.map(&:to_s) : []
+    @tried_backtracking_values = []
+    @preserved_candidates = []
   end
 
   # Does this Element have a known #value, i.e. its value is not nil.
@@ -52,6 +54,17 @@ class Element
     prev_cand_count = @candidates.count
     @candidates = (Set.new(@candidates) - Set.new(impossible_candidates)).to_a
     @candidates.count != prev_cand_count
+  end
+
+  # Set a value for this Element's value.
+  # Remember all previous values.
+  # @param value [Integer] guesses value for this Element.
+  def try_guessed_candidate
+    value = @candidates.first
+    @tried_backtracking_values << value
+    @preserved_candidates = @candidates
+    @candidates = []
+    @value = value
   end
 
   # Pretty String representation of value of this Element.

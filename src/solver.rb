@@ -3,6 +3,8 @@
 class Solver
   attr_accessor :solution
 
+  APPLY_BACKTRACKING = false
+
   # Solves a given sudoku represented as a Map instance.
   #
   # @param map [Mao] our target sudoku map (unsolved).
@@ -26,6 +28,7 @@ class Solver
       iter_count = iter_count + 1
       prev_unknown_count = unknowns
       at_least_one_element_modified = false
+      was_backtracking = false
       @solution.each do |element|
         if element.unknown?
           were_candidates_modified = solve_candidates_for(element)
@@ -37,14 +40,27 @@ class Solver
       should_still_iterate = (unknowns != prev_unknown_count) || at_least_one_element_modified
 
       not_solved_not_known_how2_proceed = !@solution.solved? && !should_still_iterate
-      perform_backtracking_step if not_solved_not_known_how2_proceed
+      was_backtracking = perform_backtracking_step if not_solved_not_known_how2_proceed
 
-    end while(should_still_iterate)
+    end while(should_still_iterate || was_backtracking)
     puts "processed #{iter_count} iterations exhibiting #{unknowns} unknown(s)"
   end
 
+  # CURRENTLY NOT WORKING CORRECLY
+  #
+  # just quessing (brute-force) one possible solution.
+  # Not correctly working yet. Add a remeber list of tried configuration.
+  # Disallow to retry these already used configurations. Repeat until all possible
+  # configurations ahve been tried.
   def perform_backtracking_step
-    puts "backtracking should be performed"
+    return false unless APPLY_BACKTRACKING
+    a_two_candidates_element = @solution.elements_with_two_candidates.first
+    unless a_two_candidates_element.nil?
+      a_two_candidates_element.try_guessed_candidate
+      puts "backtracking should be performed"
+      return true
+    end
+    false
   end
 
   # Update the candidate list of a given #element in @map
